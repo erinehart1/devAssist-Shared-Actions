@@ -14,6 +14,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
+      - name: Check secret length
+        run: |
+          echo "Length: ${#SF_JWT_KEY}"
+        env:
+          SF_JWT_KEY: ${{ secrets.SF_JWT_KEY }}
+
+
       - name: Print secret value
         run: |
           echo "Secret contents: $SF_JWT_KEY"
