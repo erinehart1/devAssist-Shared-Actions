@@ -42,7 +42,7 @@ jobs:
 
       - name: Deploy metadata
         run: |
-          sf project deploy start --source-dir force-app --ignore-warnings --json --target-org dev-org
+          sf project deploy start --source-dir force-app --ignore-warnings --ignore-conflicts --json --target-org dev-org
 
       - name: Create DevAssist CMDT records
         run: |
