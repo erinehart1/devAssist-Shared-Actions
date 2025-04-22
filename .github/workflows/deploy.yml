@@ -30,7 +30,7 @@ jobs:
         run: |
           echo "${{ secrets.SF_JWT_KEY }}" > server.key
           sfdx auth:jwt:grant \
-            --clientid "${{ secrets.SF_CONSUMER_KEY }}" \
+            --clientid "3MVG9gtjsZa8aaSXjYkIFbTJ10_fuQ5wMkbQ9lYiBmx84lrO.rzO0_AcbH.O3OcyTokySDh3feUogStRVyec2" \
             --jwtkeyfile server.key \
             --username "${{ secrets.SF_USERNAME }}" \
             --instanceurl https://login.salesforce.com \
