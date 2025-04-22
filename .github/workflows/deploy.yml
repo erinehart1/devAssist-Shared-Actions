@@ -26,6 +26,13 @@ jobs:
       - name: Setup Salesforce CLI
         uses: sfdx-actions/setup-sfdx@v1
 
+      - name: Check JWT key file structure
+        run: |
+          echo "First 5 lines of server.key:"
+          head -n 5 server.key
+          echo "Last line of server.key:"
+          tail -n 1 server.key
+
       - name: Authenticate with JWT
         run: |
           echo "${{ secrets.SF_JWT_KEY }}" > server.key
