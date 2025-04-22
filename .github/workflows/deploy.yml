@@ -14,12 +14,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Print first few characters of JWT key
+      - name: Print secret value
         run: |
-          echo "First 5 lines of secret:"
-          echo "$SF_JWT_KEY" | head -n 5
-          echo "Last line of secret:"
-          echo "$SF_JWT_KEY" | tail -n 1
+          echo "Secret contents: $SF_JWT_KEY"
         env:
           SF_JWT_KEY: ${{ secrets.SF_JWT_KEY }}
 
