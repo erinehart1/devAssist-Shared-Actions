@@ -35,9 +35,6 @@ jobs:
             --username "${{ secrets.SF_USERNAME }}" \
             --instanceurl https://login.salesforce.com \
             --setdefaultdevhubusername
-        env:
-          SF_CERT: ${{ secrets.SF_JWT_KEY }}
-          SF_USERNAME: ${{ secrets.SF_USERNAME }}
 
       - name: Deploy metadata
         run: |
