@@ -41,7 +41,8 @@ jobs:
             --alias dev-org
 
       - name: Remove named credential before deploy
-        run: rm -f force-app/main/default/namedCredentials/Cloudflare_GitHub_Proxy.namedCredential-meta.xml
+        run: |
+          rm -f force-app/main/default/namedCredentials/Cloudflare_GitHub_Proxy.namedCredential-meta.xml
 
       - name: Deploy metadata
         run: |
