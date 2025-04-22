@@ -40,9 +40,9 @@ jobs:
             --instance-url https://login.salesforce.com \
             --alias dev-org
 
-      - name: Update sfdx-project.json to ignore named credential
+      - name: Remove named credential before deploy
         run: |
-          jq '.packageDirectories[0].ignore = ["namedCredentials/Cloudflare_GitHub_Proxy.namedCredential-meta.xml"]' sfdx-project.json > tmp.$$.json && mv tmp.$$.json sfdx-project.json
+          rm -f force-app/main/default/namedCredentials/Cloudflare_GitHub_Proxy.namedCredential-meta.xml
 
       - name: Deploy metadata
         run: |
