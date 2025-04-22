@@ -1,0 +1,54 @@
+# === .github/workflows/deploy.yml ===
+# GitHub Actions script to deploy metadata and stamp CMDT records
+name: Deploy Metadata and Stamp CMDT
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy to Salesforce
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Salesforce CLI
+        uses: sfdx-actions/setup-sfdx@v1
+
+      - name: Authenticate with JWT
+        run: |
+          echo "$SF_CERT" > server.key
+          sfdx auth:jwt:grant \
+            --clientid "${{ secrets.SF_CONSUMER_KEY }}" \
+            --jwtkeyfile server.key \
+            --username "$SF_USERNAME" \
+            --instanceurl https://login.salesforce.com \
+            --setdefaultdevhubusername
+        env:
+          SF_CERT: ${{ secrets.SF_JWT_KEY }}
+          SF_USERNAME: ${{ secrets.SF_USERNAME }}
+
+      - name: Deploy metadata
+        run: |
+          sfdx force:source:deploy -p force-app --ignorewarnings --json --loglevel fatal
+
+      - name: Create CMDT records (Current + History)
+        run: |
+          node .github/scripts/stamp-cmdt.js
+
+  notify:
+    name: Notify on failure
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: failure()
+
+    steps:
+      - name: Send Slack alert (example)
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data '{
+            "text": "🚨 DevAssist deploy failed in GitHub Actions. Check the logs."
+          }' ${{ secrets.SLACK_WEBHOOK_URL }}
