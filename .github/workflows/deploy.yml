@@ -1,70 +1,26 @@
 # === .github/workflows/deploy.yml ===
-# GitHub Actions script to deploy metadata and stamp CMDT records
-name: Deploy Metadata and Stamp CMDT
+# TEMP TEST WORKFLOW — Just prints a secret from consumer repo to validate
+name: Debug Secret Injection
 
 on:
   workflow_call:
     secrets:
-      SF_USERNAME:
+      SF_JWT_KEY:
         required: true
-      SF_CONSUMER_KEY:
-        required: true
-      SF_JWT_KEY_B64:
-        required: true
-      SLACK_WEBHOOK_URL:
-        required: false
 
 jobs:
-  deploy:
-    name: Deploy to Salesforce
+  test:
+    name: Secret Echo
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Setup Salesforce CLI
-        uses: sfdx-actions/setup-sfdx@v1
-
-      - name: Check JWT Secret Length
+      - name: Print first few characters of JWT key
         run: |
-          echo "JWT Secret length: ${#SF_JWT_KEY_B64}"
+          echo "First 5 lines of secret:"
+          echo "$SF_JWT_KEY" | head -n 5
+          echo "Last line of secret:"
+          echo "$SF_JWT_KEY" | tail -n 1
         env:
-          SF_JWT_KEY_B64: ${{ secrets.SF_JWT_KEY_B64 }}
+          SF_JWT_KEY: ${{ secrets.SF_JWT_KEY }}
 
-      - name: Decode JWT key
-        run: |
-          echo "$SF_JWT_KEY_B64" | base64 --decode > server.key
-        env:
-          SF_JWT_KEY_B64: ${{ secrets.SF_JWT_KEY_B64 }}
-
-      - name: Authenticate with JWT
-        run: |
-          sfdx auth:jwt:grant \
-            --client-id "${{ secrets.SF_CONSUMER_KEY }}" \
-            --jwt-key-file server.key \
-            --username "${{ secrets.SF_USERNAME }}" \
-            --instance-url https://login.salesforce.com \
-            --set-default-dev-hub
-
-      - name: Deploy metadata
-        run: |
-          sfdx force:source:deploy -p force-app --ignorewarnings --json --loglevel fatal
-
-      - name: Create DevAssist CMDT records
-        run: |
-          node .github/scripts/create-current-cmdt.js
-          node .github/scripts/create-history-cmdt.js
-
-  notify:
-    name: Notify on failure
-    needs: deploy
-    runs-on: ubuntu-latest
-    if: failure()
-
-    steps:
-      - name: Send Slack alert (example)
-        run: |
-          curl -X POST -H 'Content-type: application/json' --data '{
-            "text": "🚨 DevAssist deploy failed in GitHub Actions. Check the logs."
-          }' ${{ secrets.SLACK_WEBHOOK_URL }}
+# All other logic temporarily removed for clarity while testing
