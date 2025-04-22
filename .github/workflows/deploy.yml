@@ -34,7 +34,9 @@ jobs:
 
       - name: Decode JWT key
         run: |
-          echo "${{ secrets.SF_JWT_KEY_B64 }}" | base64 --decode > server.key
+          echo "$SF_JWT_KEY_B64" | base64 --decode > server.key
+        env:
+          SF_JWT_KEY_B64: ${{ secrets.SF_JWT_KEY_B64 }}
 
       - name: Authenticate with JWT
         run: |
