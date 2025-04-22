@@ -26,28 +26,18 @@ jobs:
       - name: Setup Salesforce CLI
         uses: sfdx-actions/setup-sfdx@v1
 
-      - name: Check JWT key file structure
+      - name: Decode JWT key
         run: |
-          echo "First 5 lines of server.key:"
-          head -n 5 server.key
-          echo "Last line of server.key:"
-          tail -n 1 server.key
-
-      - name: Inspect server.key contents
-        run: |
-          echo 'BEGINNING OF KEY FILE'
-          cat server.key
-          echo 'END OF KEY FILE'
+          echo "${{ secrets.SF_JWT_KEY_B64 }}" | base64 --decode > server.key
 
       - name: Authenticate with JWT
         run: |
-          printf "%s" "${{ secrets.SF_JWT_KEY }}" > server.key
           sfdx auth:jwt:grant \
-            --clientid "3MVG9gtjsZa8aaSXjYkIFbTJ10_fuQ5wMkbQ9lYiBmx84lrO.rzO0_AcbH.O3OcyTokySDh3feUogStRVyec2" \
-            --jwtkeyfile server.key \
+            --client-id "${{ secrets.SF_CONSUMER_KEY }}" \
+            --jwt-key-file server.key \
             --username "${{ secrets.SF_USERNAME }}" \
-            --instanceurl https://login.salesforce.com \
-            --setdefaultdevhubusername
+            --instance-url https://login.salesforce.com \
+            --set-default-dev-hub
 
       - name: Deploy metadata
         run: |
