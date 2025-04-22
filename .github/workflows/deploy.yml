@@ -26,12 +26,6 @@ jobs:
       - name: Setup Salesforce CLI
         uses: sfdx-actions/setup-sfdx@v1
 
-      - name: Debug secrets presence
-        run: |
-          echo "SF_JWT_KEY length: ${#{{ secrets.SF_JWT_KEY }}}"
-          echo "SF_CONSUMER_KEY: ${#{{ secrets.SF_CONSUMER_KEY }}}"
-          echo "SF_USERNAME: ${{ secrets.SF_USERNAME }}"
-
       - name: Authenticate with JWT
         run: |
           echo "${{ secrets.SF_JWT_KEY }}" > server.key
