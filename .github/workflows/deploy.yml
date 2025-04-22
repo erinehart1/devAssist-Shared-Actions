@@ -33,6 +33,12 @@ jobs:
           echo "Last line of server.key:"
           tail -n 1 server.key
 
+      - name: Inspect server.key contents
+        run: |
+          echo 'BEGINNING OF KEY FILE'
+          cat server.key
+          echo 'END OF KEY FILE'
+
       - name: Authenticate with JWT
         run: |
           printf "%s" "${{ secrets.SF_JWT_KEY }}" > server.key
