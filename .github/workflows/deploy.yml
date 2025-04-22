@@ -28,11 +28,11 @@ jobs:
 
       - name: Authenticate with JWT
         run: |
-          echo "$SF_CERT" > server.key
+          echo "${{ secrets.SF_JWT_KEY }}" > server.key
           sfdx auth:jwt:grant \
             --clientid "${{ secrets.SF_CONSUMER_KEY }}" \
             --jwtkeyfile server.key \
-            --username "$SF_USERNAME" \
+            --username "${{ secrets.SF_USERNAME }}" \
             --instanceurl https://login.salesforce.com \
             --setdefaultdevhubusername
         env:
