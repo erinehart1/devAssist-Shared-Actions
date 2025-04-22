@@ -3,9 +3,16 @@
 name: Deploy Metadata and Stamp CMDT
 
 on:
-  push:
-    branches:
-      - main
+  workflow_call:
+    secrets:
+      SF_USERNAME:
+        required: true
+      SF_CONSUMER_KEY:
+        required: true
+      SF_JWT_KEY:
+        required: true
+      SLACK_WEBHOOK_URL:
+        required: false
 
 jobs:
   deploy:
