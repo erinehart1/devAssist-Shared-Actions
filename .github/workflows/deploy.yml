@@ -26,6 +26,12 @@ jobs:
       - name: Setup Salesforce CLI
         uses: sfdx-actions/setup-sfdx@v1
 
+      - name: Check JWT Secret Length
+        run: |
+          echo "JWT Secret length: ${#SF_JWT_KEY_B64}"
+        env:
+          SF_JWT_KEY_B64: ${{ secrets.SF_JWT_KEY_B64 }}
+
       - name: Decode JWT key
         run: |
           echo "${{ secrets.SF_JWT_KEY_B64 }}" | base64 --decode > server.key
