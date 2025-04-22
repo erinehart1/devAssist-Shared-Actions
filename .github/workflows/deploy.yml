@@ -9,12 +9,10 @@ on:
         required: true
       SF_CONSUMER_KEY:
         required: true
-      SF_JWT_KEY:
+      SF_JWT_KEY_B64:
         required: true
       SLACK_WEBHOOK_URL:
         required: false
-      SF_JWT_KEY_B64:
-        required: true
 
 jobs:
   deploy:
