@@ -27,7 +27,8 @@ jobs:
         uses: sfdx-actions/setup-sfdx@v1
 
       - name: Write JWT key to file
-        run: echo "$SF_JWT_KEY" > server.key
+        run: |
+          echo "$SF_JWT_KEY" > server.key
         env:
           SF_JWT_KEY: ${{ secrets.SF_JWT_KEY }}
 
@@ -41,8 +42,7 @@ jobs:
             --alias dev-org
 
       - name: Remove named credential before deploy
-        run: |
-          rm -f force-app/main/default/namedCredentials/Cloudflare_GitHub_Proxy.namedCredential-meta.xml
+        run: rm -f force-app/main/default/namedCredentials/Cloudflare_GitHub_Proxy.namedCredential-meta.xml
 
       - name: Deploy metadata
         run: |
@@ -50,7 +50,8 @@ jobs:
 
       - name: Create DevAssist CMDT records
         run: |
-          echo "Skipping CMDT creation because script files are missing"
+          node .github/scripts/create-current-cmdt.js
+          node .github/scripts/create-history-cmdt.js
 
   notify:
     name: Notify on failure
