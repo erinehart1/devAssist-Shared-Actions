@@ -29,22 +29,28 @@ jobs:
         env:
           SF_JWT_KEY: ${{ secrets.SF_JWT_KEY }}
 
-      - name: Decode JWT and log username (sub)
-        run: |
-          # Base64 decode the JWT (just the header + payload for inspection)
-          JWT_HEADER=$(jq -Rr 'split(".")[0]' <<< "SF_JWT_KEY") | base64 -d
-          JWT_PAYLOAD=$(jq -Rr 'split(".")[1]' <<< SF_JWT_KEY) | base64 -d
-
-          echo "JWT Header:"
-          echo "$JWT_HEADER"
-
-          echo "JWT Payload:"
-          echo "$JWT_PAYLOAD"
-
-          echo "JWT Username (sub):"
-          echo "$JWT_PAYLOAD" | jq -r '.sub'
+      - name: Generate JWT manually
+        id: generate-jwt
         env:
-          SF_JWT: ${{ secrets.SF_JWT_TOKEN }}
+          SF_JWT_KEY: ${{ secrets.SF_JWT_KEY }}
+          SF_CLIENT_ID: ${{ secrets.SF_CLIENT_ID }}
+          SF_USERNAME: ${{ secrets.SF_USERNAME }}
+        run: |
+          echo "$SF_JWT_KEY" | base64 --decode > server.key
+
+          HEADER=$(echo -n '{"alg":"RS256","typ":"JWT"}' | openssl base64 -e | tr -d '=' | tr '/+' '_-' | tr -d '\n')
+          NOW=$(date +%s)
+          EXP=$((NOW + 300)) # 5 min expiration
+          CLAIM=$(echo -n "{\"iss\":\"$SF_CLIENT_ID\",\"sub\":\"$SF_USERNAME\",\"aud\":\"https://test.salesforce.com\",\"exp\":$EXP}" | openssl base64 -e | tr -d '=' | tr '/+' '_-' | tr -d '\n')
+          UNSIGNED="${HEADER}.${CLAIM}"
+          SIGNATURE=$(echo -n "$UNSIGNED" | openssl dgst -sha256 -sign server.key | openssl base64 -e | tr -d '=' | tr '/+' '_-' | tr -d '\n')
+
+          echo "JWT Token: ${UNSIGNED}.${SIGNATURE}"
+
+          # Decode payload to log username (sub)
+          echo "Decoded JWT Payload:"
+          echo "$CLAIM" | base64 -d | jq .
+
 
 
       - name: Authenticate with JWT
