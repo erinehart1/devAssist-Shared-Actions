@@ -65,7 +65,6 @@ jobs:
             --jwtkeyfile server.key \
             --username ${{ secrets.SF_USERNAME }} \
             --instanceurl https://test.salesforce.com \
-            # --setdefaultdevhubusername
 
       - name: Remove named credential before deploy
         run: rm -f force-app/main/default/namedCredentials/Cloudflare_GitHub_Proxy.namedCredential-meta.xml
