@@ -35,7 +35,7 @@ jobs:
             --clientid ${{ secrets.SF_CONSUMER_KEY }} \
             --jwtkeyfile server.key \
             --username ${{ secrets.SF_USERNAME }} \
-            --instanceurl https://login.salesforce.com \
+            --instanceurl https://test.salesforce.com \
             --setdefaultdevhubusername
 
       - name: Remove named credential before deploy
