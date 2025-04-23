@@ -27,26 +27,22 @@ jobs:
         uses: sfdx-actions/setup-sfdx@v1
 
       - name: Write JWT key to file
-        run: |
-          echo "$SF_JWT_KEY" > server.key
+        run: echo "$SF_JWT_KEY" > server.key
         env:
           SF_JWT_KEY: ${{ secrets.SF_JWT_KEY }}
 
       - name: Authenticate with JWT
         run: |
-          sf org login jwt \
-            --client-id ${{ secrets.SF_CONSUMER_KEY }} \
+          sfdx auth:jwt:grant \
+            --client-id "${{ secrets.SF_CONSUMER_KEY }}" \
             --jwt-key-file server.key \
-            --username ${{ secrets.SF_USERNAME }} \
+            --username "${{ secrets.SF_USERNAME }}" \
             --instance-url https://login.salesforce.com \
-            --alias dev-org
-
-      - name: Remove named credential before deploy
-        run: rm -f force-app/main/default/namedCredentials/Cloudflare_GitHub_Proxy.namedCredential-meta.xml
+            --set-default-dev-hub
 
       - name: Deploy metadata
         run: |
-          sf project deploy start --source-dir force-app --ignore-warnings --ignore-conflicts --json --target-org dev-org
+          sfdx force:source:deploy -p force-app --ignorewarnings --json --loglevel fatal
 
       - name: Create DevAssist CMDT records
         run: |
