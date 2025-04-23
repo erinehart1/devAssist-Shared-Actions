@@ -29,6 +29,11 @@ jobs:
         env:
           SF_JWT_KEY: ${{ secrets.SF_JWT_KEY }}
 
+      - name: Decode JWT and log payload
+        run: |
+          IFS='.' read -r header payload signature <<< "${UNSIGNED}.${SIGNATURE}"
+          echo "$payload" | base64 -d | jq .
+
       - name: Generate JWT manually
         id: generate-jwt
         env:
