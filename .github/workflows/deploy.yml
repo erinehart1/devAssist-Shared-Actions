@@ -29,6 +29,24 @@ jobs:
         env:
           SF_JWT_KEY: ${{ secrets.SF_JWT_KEY }}
 
+      - name: Decode JWT and log username (sub)
+        run: |
+          # Base64 decode the JWT (just the header + payload for inspection)
+          JWT_HEADER=$(jq -Rr 'split(".")[0]' <<< "$SF_JWT") | base64 -d
+          JWT_PAYLOAD=$(jq -Rr 'split(".")[1]' <<< "$SF_JWT") | base64 -d
+
+          echo "JWT Header:"
+          echo "$JWT_HEADER"
+
+          echo "JWT Payload:"
+          echo "$JWT_PAYLOAD"
+
+          echo "JWT Username (sub):"
+          echo "$JWT_PAYLOAD" | jq -r '.sub'
+        env:
+          SF_JWT: ${{ secrets.SF_JWT_TOKEN }}
+
+
       - name: Authenticate with JWT
         run: |
           sfdx auth:jwt:grant \
