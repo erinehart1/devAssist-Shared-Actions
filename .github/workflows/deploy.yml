@@ -1,5 +1,3 @@
-# === .github/workflows/deploy.yml ===
-# GitHub Actions script to deploy metadata and stamp CMDT records
 name: Deploy Metadata and Stamp CMDT
 
 on:
@@ -34,15 +32,17 @@ jobs:
       - name: Authenticate with JWT
         run: |
           sfdx auth:jwt:grant \
-            --client-id "${{ secrets.SF_CONSUMER_KEY }}" \
-            --jwt-key-file server.key \
-            --username "${{ secrets.SF_USERNAME }}" \
-            --instance-url https://login.salesforce.com \
-            --set-default-dev-hub
+            --clientid ${{ secrets.SF_CONSUMER_KEY }} \
+            --jwtkeyfile server.key \
+            --username ${{ secrets.SF_USERNAME }} \
+            --instanceurl https://login.salesforce.com \
+            --setdefaultdevhubusername
+
+      - name: Remove named credential before deploy
+        run: rm -f force-app/main/default/namedCredentials/Cloudflare_GitHub_Proxy.namedCredential-meta.xml
 
       - name: Deploy metadata
-        run: |
-          sfdx force:source:deploy -p force-app --ignorewarnings --json --loglevel fatal
+        run: sfdx force:source:deploy -p force-app -u ${{ secrets.SF_USERNAME }} --json --loglevel fatal
 
       - name: Create DevAssist CMDT records
         run: |
