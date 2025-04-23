@@ -25,7 +25,7 @@ jobs:
         uses: sfdx-actions/setup-sfdx@v1
 
       - name: Write JWT key to file
-        run: echo "$SF_JWT_KEY" > server.key
+        run: echo "$SF_JWT_KEY" | base64 --decode > server.key
         env:
           SF_JWT_KEY: ${{ secrets.SF_JWT_KEY }}
 
