@@ -61,14 +61,32 @@ jobs:
             exit 1
           fi
 
-      - name: Authenticate with JWT
+      - name: Authenticate with JWT via manual HTTP POST
+        env:
+          SF_JWT_KEY: ${{ secrets.SF_JWT_KEY }}
+          SF_CLIENT_ID: ${{ secrets.SF_CLIENT_ID }}
+          SF_USERNAME: ${{ secrets.SF_USERNAME }}
         run: |
-          sfdx auth:jwt:grant \
-            --clientid ${{ secrets.SF_CONSUMER_KEY }} \
-            --jwtkeyfile server.key \
-            --username ${{ secrets.SF_USERNAME }} \
-            --instanceurl https://test.salesforce.com \
-            --setdefaultdevhubusername
+          echo "$SF_JWT_KEY" | base64 --decode > server.key
+
+          # Create JWT header and claim
+          HEADER=$(echo -n '{"alg":"RS256","typ":"JWT"}' | openssl base64 -e | tr -d '=' | tr '/+' '_-' | tr -d '\n')
+          NOW=$(date +%s)
+          EXP=$((NOW + 300))
+          CLAIM=$(echo -n "{\"iss\":\"$SF_CLIENT_ID\",\"sub\":\"$SF_USERNAME\",\"aud\":\"https://test.salesforce.com\",\"exp\":$EXP}" | openssl base64 -e | tr -d '=' | tr '/+' '_-' | tr -d '\n')
+          UNSIGNED="${HEADER}.${CLAIM}"
+          SIGNATURE=$(echo -n "$UNSIGNED" | openssl dgst -sha256 -sign server.key | openssl base64 -e | tr -d '=' | tr '/+' '_-' | tr -d '\n')
+          JWT="${UNSIGNED}.${SIGNATURE}"
+
+          echo "Posting JWT manually to https://test.salesforce.com/services/oauth2/token"
+          RESPONSE=$(curl -s -X POST https://test.salesforce.com/services/oauth2/token \
+            -d "grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer" \
+            -d "assertion=$JWT")
+
+          echo "$RESPONSE" | jq .
+
+          # Optional: Export access token to use downstream
+          echo "ACCESS_TOKEN=$(echo $RESPONSE | jq -r .access_token)" >> $GITHUB_ENV
 
       - name: Remove named credential before deploy
         run: rm -f force-app/main/default/namedCredentials/Cloudflare_GitHub_Proxy.namedCredential-meta.xml
