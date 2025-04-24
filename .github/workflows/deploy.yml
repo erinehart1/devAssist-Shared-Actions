@@ -29,16 +29,11 @@ jobs:
         env:
           SF_JWT_KEY: ${{ secrets.SF_JWT_KEY }}
 
-      - name: Decode JWT and log payload
-        run: |
-          IFS='.' read -r header payload signature <<< "${UNSIGNED}.${SIGNATURE}"
-          echo "$payload" | base64 -d | jq .
-
       - name: Generate JWT manually
         id: generate-jwt
         env:
           SF_JWT_KEY: ${{ secrets.SF_JWT_KEY }}
-          SF_CLIENT_ID: ${{ secrets.SF_CLIENT_ID }}
+          SF_CONSUMER_KEY: ${{ secrets.SF_CONSUMER_KEY }}
           SF_USERNAME: ${{ secrets.SF_USERNAME }}
         run: |
           echo "$SF_JWT_KEY" | base64 --decode > server.key
@@ -46,7 +41,7 @@ jobs:
           HEADER=$(echo -n '{"alg":"RS256","typ":"JWT"}' | openssl base64 -e | tr -d '=' | tr '/+' '_-' | tr -d '\n')
           NOW=$(date +%s)
           EXP=$((NOW + 300)) # 5 min expiration
-          CLAIM=$(echo -n "{\"iss\":\"$SF_CLIENT_ID\",\"sub\":\"$SF_USERNAME\",\"aud\":\"https://test.salesforce.com\",\"exp\":$EXP}" | openssl base64 -e | tr -d '=' | tr '/+' '_-' | tr -d '\n')
+          CLAIM=$(echo -n "{\"iss\":\"$SF_CONSUMER_KEY\",\"sub\":\"$SF_USERNAME\",\"aud\":\"https://test.salesforce.com\",\"exp\":$EXP}" | openssl base64 -e | tr -d '=' | tr '/+' '_-' | tr -d '\n')
           UNSIGNED="${HEADER}.${CLAIM}"
           SIGNATURE=$(echo -n "$UNSIGNED" | openssl dgst -sha256 -sign server.key | openssl base64 -e | tr -d '=' | tr '/+' '_-' | tr -d '\n')
 
@@ -64,7 +59,7 @@ jobs:
       - name: Authenticate with JWT via manual HTTP POST
         env:
           SF_JWT_KEY: ${{ secrets.SF_JWT_KEY }}
-          SF_CLIENT_ID: ${{ secrets.SF_CLIENT_ID }}
+          SF_CONSUMER_KEY: ${{ secrets.SF_CONSUMER_KEY }}
           SF_USERNAME: ${{ secrets.SF_USERNAME }}
         run: |
           echo "$SF_JWT_KEY" | base64 --decode > server.key
@@ -73,7 +68,7 @@ jobs:
           HEADER=$(echo -n '{"alg":"RS256","typ":"JWT"}' | openssl base64 -e | tr -d '=' | tr '/+' '_-' | tr -d '\n')
           NOW=$(date +%s)
           EXP=$((NOW + 300))
-          CLAIM=$(echo -n "{\"iss\":\"$SF_CLIENT_ID\",\"sub\":\"$SF_USERNAME\",\"aud\":\"https://test.salesforce.com\",\"exp\":$EXP}" | openssl base64 -e | tr -d '=' | tr '/+' '_-' | tr -d '\n')
+          CLAIM=$(echo -n "{\"iss\":\"$SF_CONSUMER_KEY\",\"sub\":\"$SF_USERNAME\",\"aud\":\"https://test.salesforce.com\",\"exp\":$EXP}" | openssl base64 -e | tr -d '=' | tr '/+' '_-' | tr -d '\n')
           UNSIGNED="${HEADER}.${CLAIM}"
           SIGNATURE=$(echo -n "$UNSIGNED" | openssl dgst -sha256 -sign server.key | openssl base64 -e | tr -d '=' | tr '/+' '_-' | tr -d '\n')
           JWT="${UNSIGNED}.${SIGNATURE}"
