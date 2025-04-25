@@ -41,7 +41,7 @@ jobs:
           HEADER=$(echo -n '{"alg":"RS256","typ":"JWT"}' | openssl base64 -e | tr -d '=' | tr '/+' '_-' | tr -d '\n')
           NOW=$(date +%s)
           EXP=$((NOW + 300)) # 5 min expiration
-          CLAIM=$(echo -n "{\"iss\":\"$SF_CONSUMER_KEY\",\"sub\":\"$SF_USERNAME\",\"aud\":\"https://test.salesforce.com\",\"exp\":$EXP}" | openssl base64 -e | tr -d '=' | tr '/+' '_-' | tr -d '\n')
+          CLAIM=$(echo -n "{\"iss\":\"$SF_CONSUMER_KEY\",\"sub\":\"$SF_USERNAME\",\"aud\":\"https://login.salesforce.com\",\"exp\":$EXP}" | openssl base64 -e | tr -d '=' | tr '/+' '_-' | tr -d '\n')
           UNSIGNED="${HEADER}.${CLAIM}"
           SIGNATURE=$(echo -n "$UNSIGNED" | openssl dgst -sha256 -sign server.key | openssl base64 -e | tr -d '=' | tr '/+' '_-' | tr -d '\n')
 
@@ -51,8 +51,8 @@ jobs:
           echo "$CLAIM" | base64 -d | jq .
 
           # ✅ Validate audience claim
-          if ! echo "$CLAIM" | base64 -d | jq -r .aud | grep -q "https://test.salesforce.com"; then
-            echo "❌ Error: JWT 'aud' claim must be https://test.salesforce.com"
+          if ! echo "$CLAIM" | base64 -d | jq -r .aud | grep -q "https://login.salesforce.com"; then
+            echo "❌ Error: JWT 'aud' claim must be https://login.salesforce.com"
             exit 1
           fi
 
@@ -68,13 +68,13 @@ jobs:
           HEADER=$(echo -n '{"alg":"RS256","typ":"JWT"}' | openssl base64 -e | tr -d '=' | tr '/+' '_-' | tr -d '\n')
           NOW=$(date +%s)
           EXP=$((NOW + 300))
-          CLAIM=$(echo -n "{\"iss\":\"$SF_CONSUMER_KEY\",\"sub\":\"$SF_USERNAME\",\"aud\":\"https://test.salesforce.com\",\"exp\":$EXP}" | openssl base64 -e | tr -d '=' | tr '/+' '_-' | tr -d '\n')
+          CLAIM=$(echo -n "{\"iss\":\"$SF_CONSUMER_KEY\",\"sub\":\"$SF_USERNAME\",\"aud\":\"https://login.salesforce.com\",\"exp\":$EXP}" | openssl base64 -e | tr -d '=' | tr '/+' '_-' | tr -d '\n')
           UNSIGNED="${HEADER}.${CLAIM}"
           SIGNATURE=$(echo -n "$UNSIGNED" | openssl dgst -sha256 -sign server.key | openssl base64 -e | tr -d '=' | tr '/+' '_-' | tr -d '\n')
           JWT="${UNSIGNED}.${SIGNATURE}"
 
-          echo "Posting JWT manually to https://test.salesforce.com/services/oauth2/token"
-          RESPONSE=$(curl -s -X POST https://test.salesforce.com/services/oauth2/token \
+          echo "Posting JWT manually to https://login.salesforce.com/services/oauth2/token"
+          RESPONSE=$(curl -s -X POST https://login.salesforce.com/services/oauth2/token \
             -d "grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer" \
             -d "assertion=$JWT")
 
